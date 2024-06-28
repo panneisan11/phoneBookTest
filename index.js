@@ -13,7 +13,7 @@ morgan.token("body", (req) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 app.use(cors());
 
-const persons = [
+let persons = [
     {
         "id": 1,
         "name": "Arto Hellas",
@@ -84,11 +84,39 @@ app.post("/api/persons", (request, response) => {
             error: 'The name already exists in the phonebook'
         })
     }
-    person.id = Math.random();
-    persons.concat(person);
+    const maxIdPerson = persons.reduce((max, person) => (person.id > max.id ? person : max), persons[0]);
+    person.id = maxIdPerson.id + 1;
+    persons = persons.concat(person);
     response.json(person);
 
 })
+
+app.put('/api/persons/:id', (request, response) => {
+    const id = parseInt(request.params.id);
+    const person = request.body;
+    if (!person) {
+        return response.send(400, `Person Data is missing!`);
+    }
+    if (!person.name || !person.number) {
+        return response.status(400).json({
+            error: 'The name or number is missing'
+        })
+    }
+
+    const filteredPersons = persons.filter(p => p.id === id);
+    const personToUpdate = filteredPersons[0];
+    if (!personToUpdate || personToUpdate.length <= 0) {
+        return response.status(400).json({
+            error: `Person name '${person.name}' is not found!`
+        })
+    }
+    personToUpdate.number = person.number;
+
+    // Respond with the updated person object
+    response.json(personToUpdate);
+
+})
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
