@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const app = express();
 const cors = require("cors");
 const path = require('path');
-
+// Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -78,7 +78,8 @@ app.post("/api/persons", (request, response) => {
         })
     }
 
-    if (persons.filter(p => p.name === person.name)) {
+    const filteredPersons = persons.filter(p => p.name === person.name);
+    if (filteredPersons && filteredPersons.length > 0) {
         return response.status(400).json({
             error: 'The name already exists in the phonebook'
         })
